@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4361ee">
+    <meta name="description" content="Track bets, calculate odds, and settle up">
     <title>BetRunner</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <style>
         :root {
             --primary: #4361ee;
@@ -396,6 +400,10 @@
                             </div>
                         </div>
                         
+                        <div id="max-payout-display" class="payout-card hidden">
+                            <strong>Maximum potential payout:</strong> <span id="max-potential-payout">$0.00</span>
+                        </div>
+                        
                         <button id="place-bet">Place Bet</button>
                     </div>
                 </div>
@@ -511,6 +519,15 @@
     </footer>
 
     <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service worker registered'))
+                    .catch(err => console.log('Service worker registration failed:', err));
+            });
+        }
+        
         let participants = [];
         let bets = [];
         let activeBet = null;
@@ -852,6 +869,65 @@
             return potentialWin;
         }
         
+        function updateMaxPotentialPayout() {
+            const betId = document.getElementById('select-bet').value;
+            if (!betId) return;
+            
+            const bet = bets.find(b => b.id === betId);
+            if (!bet) return;
+            
+            const amountStr = document.getElementById('bet-amount').value;
+            if (!amountStr) {
+                document.getElementById('max-payout-display').classList.add('hidden');
+                return;
+            }
+            
+            const amount = parseFloat(amountStr);
+            if (isNaN(amount) || amount <= 0) {
+                document.getElementById('max-payout-display').classList.add('hidden');
+                return;
+            }
+            
+            let odds;
+            if (bet.autoOdds) {
+                const option = document.getElementById('select-option').value;
+                const participant = document.getElementById('select-participant').value;
+                
+                const tempWager = {
+                    participant,
+                    option,
+                    amount
+                };
+                
+                const autoOdds = calculateAutoOdds(bet, tempWager);
+                if (!autoOdds || !autoOdds[option]) return;
+                
+                if (bet.oddsFormat === 'decimal') {
+                    odds = autoOdds[option].decimal;
+                } else if (bet.oddsFormat === 'american') {
+                    odds = autoOdds[option].american;
+                } else {
+                    odds = autoOdds[option].fractional;
+                }
+            } else {
+                const oddsStr = document.getElementById('set-odds').value;
+                if (!oddsStr) {
+                    document.getElementById('max-payout-display').classList.add('hidden');
+                    return;
+                }
+                
+                odds = parseOdds(oddsStr, bet.oddsFormat);
+                if (odds === null) {
+                    document.getElementById('max-payout-display').classList.add('hidden');
+                    return;
+                }
+            }
+            
+            const potentialWin = calculatePotentialWin(amount, odds, bet.oddsFormat);
+            document.getElementById('max-potential-payout').textContent = '$' + potentialWin.toFixed(2);
+            document.getElementById('max-payout-display').classList.remove('hidden');
+        }
+        
         function formatOdds(odds, format) {
             if (format === 'decimal') {
                 return odds.toFixed(2);
@@ -889,6 +965,7 @@
                     const optionSelect = document.getElementById('select-option');
                     const oddsInput = document.getElementById('set-odds');
                     const oddsDisplay = document.getElementById('auto-odds-display');
+                    const maxPayoutDisplay = document.getElementById('max-payout-display');
                     
                     participantSelect.innerHTML = '';
                     participants.forEach(name => {
@@ -919,7 +996,15 @@
                         oddsDisplay.classList.add('hidden');
                     }
                     
+                    // Initially hide the max payout display
+                    maxPayoutDisplay.classList.add('hidden');
+                    
                     document.getElementById('place-bet-form').classList.remove('hidden');
+                    
+                    // Add event listeners to update max potential payout
+                    document.getElementById('bet-amount').addEventListener('input', updateMaxPotentialPayout);
+                    document.getElementById('set-odds').addEventListener('input', updateMaxPotentialPayout);
+                    document.getElementById('select-option').addEventListener('change', updateMaxPotentialPayout);
                 }
             } else {
                 document.getElementById('place-bet-form').classList.add('hidden');
