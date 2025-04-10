@@ -363,6 +363,28 @@
                         </label>
                     </div>
                     
+                    <div class="form-group">
+                        <label for="default-even-odds-checkbox">
+                            <input type="checkbox" id="default-even-odds-checkbox" style="width: auto; margin-right: 0.5rem;">
+                            Set default even odds (1:1) for all options
+                        </label>
+                    </div>
+                    
+                    <script>
+                        // Make auto-odds and default-even-odds checkboxes mutually exclusive
+                        document.getElementById('auto-odds-checkbox').addEventListener('change', function() {
+                            if (this.checked) {
+                                document.getElementById('default-even-odds-checkbox').checked = false;
+                            }
+                        });
+                        
+                        document.getElementById('default-even-odds-checkbox').addEventListener('change', function() {
+                            if (this.checked) {
+                                document.getElementById('auto-odds-checkbox').checked = false;
+                            }
+                        });
+                    </script>
+                    
                     <button id="create-bet">Create Bet</button>
                 </div>
                 
@@ -398,6 +420,7 @@
                             <div id="auto-odds-display" class="odds-display hidden">
                                 <em>Odds will be calculated automatically based on all bets</em>
                             </div>
+                            <button id="clear-odds" style="width: auto; margin-top: 0.5rem; background-color: #f8f9fa; color: #212529; border: 1px solid #ddd;">Clear Odds (1:1)</button>
                         </div>
                         
                         <div id="max-payout-display" class="payout-card hidden">
@@ -664,6 +687,7 @@
             const betType = document.getElementById('bet-type').value;
             const oddsType = document.getElementById('odds-type').value;
             const useAutoOdds = document.getElementById('auto-odds-checkbox').checked;
+            const useDefaultEvenOdds = document.getElementById('default-even-odds-checkbox').checked;
             
             if (!title) {
                 showToast('Please enter a bet title', true);
@@ -712,6 +736,7 @@
                 settled: false,
                 winner: null,
                 autoOdds: useAutoOdds,
+                defaultEvenOdds: useDefaultEvenOdds,
                 createdAt: new Date().toISOString()
             };
             
@@ -721,7 +746,13 @@
             updateBetSelect();
             document.getElementById('bet-title').value = '';
             
-            showToast(`Bet created successfully${useAutoOdds ? ' with auto-odds' : ''}`);
+            let toastMessage = 'Bet created successfully';
+            if (useAutoOdds) {
+                toastMessage += ' with auto-odds';
+            } else if (useDefaultEvenOdds) {
+                toastMessage += ' with default even odds (1:1)';
+            }
+            showToast(toastMessage);
         });
         
         function renderBetsTable() {
@@ -983,10 +1014,13 @@
                         optionSelect.appendChild(optEl);
                     });
                     
+                    const clearOddsBtn = document.getElementById('clear-odds');
+                    
                     if (bet.autoOdds) {
                         oddsInput.readOnly = true;
                         oddsInput.placeholder = "Odds will be auto-calculated";
                         oddsDisplay.classList.remove('hidden');
+                        clearOddsBtn.style.display = 'none'; // Hide clear odds button
                     } else {
                         oddsInput.readOnly = false;
                         oddsInput.placeholder = `Set odds (e.g., ${
@@ -994,6 +1028,18 @@
                             bet.oddsFormat === 'american' ? '+150' : '3/2'
                         })`;
                         oddsDisplay.classList.add('hidden');
+                        clearOddsBtn.style.display = 'inline-block'; // Show clear odds button
+                        
+                        // If bet has default even odds setting, auto-set the odds to 1:1
+                        if (bet.defaultEvenOdds) {
+                            if (bet.oddsFormat === 'decimal') {
+                                oddsInput.value = '2.0';
+                            } else if (bet.oddsFormat === 'american') {
+                                oddsInput.value = '+100';
+                            } else if (bet.oddsFormat === 'fractional') {
+                                oddsInput.value = '1/1';
+                            }
+                        }
                     }
                     
                     // Initially hide the max payout display
@@ -1005,6 +1051,29 @@
                     document.getElementById('bet-amount').addEventListener('input', updateMaxPotentialPayout);
                     document.getElementById('set-odds').addEventListener('input', updateMaxPotentialPayout);
                     document.getElementById('select-option').addEventListener('change', updateMaxPotentialPayout);
+                    
+                    // Set up Clear Odds button
+                    document.getElementById('clear-odds').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        
+                        // Set to 1:1 odds based on the current odds format
+                        if (bet.oddsFormat === 'decimal') {
+                            document.getElementById('set-odds').value = '2.0';
+                        } else if (bet.oddsFormat === 'american') {
+                            document.getElementById('set-odds').value = '+100';
+                        } else if (bet.oddsFormat === 'fractional') {
+                            document.getElementById('set-odds').value = '1/1';
+                        }
+                        
+                        // Update the max potential payout display
+                        updateMaxPotentialPayout();
+                        
+                        // Only enable this if auto-odds is off
+                        if (bet.autoOdds) {
+                            showToast('Cannot set odds manually when auto-odds is enabled', true);
+                            document.getElementById('set-odds').value = '';
+                        }
+                    });
                 }
             } else {
                 document.getElementById('place-bet-form').classList.add('hidden');
