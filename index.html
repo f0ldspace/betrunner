@@ -111,7 +111,8 @@
             margin-top: 1rem;
             background: white;
             border-radius: 8px;
-            overflow: hidden;
+            overflow-x: auto;
+            display: block;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         
@@ -208,6 +209,17 @@
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
+            }
+            
+            th, td {
+                padding: 0.5rem 0.3rem;
+                font-size: 0.9rem;
+            }
+            
+            .action-btn {
+                padding: 0.4rem 0.3rem;
+                font-size: 0.8rem;
+                margin-right: 0.2rem;
             }
         }
         
@@ -545,7 +557,7 @@
         // Register service worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('/betrunner/sw.js')
                     .then(reg => console.log('Service worker registered'))
                     .catch(err => console.log('Service worker registration failed:', err));
             });

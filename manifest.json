@@ -2,7 +2,7 @@
   "name": "BetRunner",
   "short_name": "BetRunner",
   "description": "Track bets, calculate odds, and settle up",
-  "start_url": "/index.html",
+  "start_url": "/betrunner/index.html",
   "display": "standalone",
   "background_color": "#f8f9fa",
   "theme_color": "#4361ee",

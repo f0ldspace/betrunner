@@ -1,10 +1,10 @@
 const CACHE_NAME = 'betrunner-cache-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/betrunner/',
+  '/betrunner/index.html',
+  '/betrunner/manifest.json',
+  '/betrunner/icons/icon-192x192.png',
+  '/betrunner/icons/icon-512x512.png'
 ];
 
 // Install event - cache assets
