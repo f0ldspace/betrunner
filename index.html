@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BetRunner</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --light-bg: #f8f9fa;
+            --dark-text: #212529;
+            --light-text: #f8f9fa;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: var(--light-text);
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        main {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1rem;
+            flex-grow: 1;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            flex: 1 1 45%;
+            min-width: 300px;
+        }
+        
+        h2 {
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .action-btn {
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            border: none;
+            width: auto;
+        }
+        
+        .settle-btn {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .delete-btn {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .results-card {
+            border-left: 4px solid var(--success);
+            padding: 1rem;
+            margin-top: 1rem;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        #participants-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .participant-tag {
+            background: var(--light-bg);
+            padding: 0.5rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .participant-tag button {
+            background: none;
+            border: none;
+            color: var(--danger);
+            margin-left: 0.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: auto;
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1rem;
+            color: #666;
+            font-size: 0.875rem;
+            margin-top: auto;
+        }
+        
+        .odds-display {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+            gap: 1rem;
+        }
+        
+        .odds-display span {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        /* Payout display styling */
+        .payout-card {
+            background-color: #f1f8ff;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .payout-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .winner {
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        .loser {
+            color: var(--danger);
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        .error {
+            background: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>BetRunner</h1>
+        <p>Track bets, calculate odds, and settle up</p>
+    </header>
+    
+    <main>
+        <div class="tabs">
+            <div class="tab active" data-tab="bet-management">Bet Management</div>
+            <div class="tab" data-tab="odds-calculator">Odds Calculator</div>
+        </div>
+        
+        <div id="bet-management" class="tab-content active">
+            <div class="container">
+                <div class="card">
+                    <h2>Create New Bet</h2>
+                    
+                    <div class="form-group">
+                        <label for="bet-title">Bet Title</label>
+                        <input type="text" id="bet-title" placeholder="What's the bet about?">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Participants</label>
+                        <div class="form-group">
+                            <input type="text" id="participant-name" placeholder="Add participant name">
+                            <button id="add-participant">Add Participant</button>
+                        </div>
+                        <div id="participants-list"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bet-type">Bet Type</label>
+                        <select id="bet-type">
+                            <option value="binary">Binary (Win/Lose)</option>
+                            <option value="multi-outcome">Multiple Outcomes</option>
+                        </select>
+                    </div>
+                    
+                    <div id="binary-options" class="form-group">
+                        <label>Options</label>
+                        <div id="binary-sides">
+                            <div class="form-group">
+                                <input type="text" id="option-for" placeholder="For (e.g., Yes, Heads)" value="Yes">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="option-against" placeholder="Against (e.g., No, Tails)" value="No">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="multi-options" class="form-group hidden">
+                        <label>Outcomes</label>
+                        <div id="multi-outcomes">
+                            <div class="form-group">
+                                <input type="text" class="outcome-option" placeholder="Outcome 1">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="outcome-option" placeholder="Outcome 2">
+                            </div>
+                        </div>
+                        <button id="add-outcome">Add Another Outcome</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="odds-type">Odds Format</label>
+                        <select id="odds-type">
+                            <option value="decimal">Decimal (e.g., 2.50)</option>
+                            <option value="american">American (e.g., +150, -200)</option>
+                            <option value="fractional">Fractional (e.g., 3/2)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="auto-odds-checkbox">
+                            <input type="checkbox" id="auto-odds-checkbox" style="width: auto; margin-right: 0.5rem;">
+                            Auto-calculate odds based on bets
+                        </label>
+                    </div>
+                    
+                    <button id="create-bet">Create Bet</button>
+                </div>
+                
+                <div class="card">
+                    <h2>Place Bets</h2>
+                    
+                    <div class="form-group">
+                        <label for="select-bet">Select Bet</label>
+                        <select id="select-bet">
+                            <option value="">Choose a bet...</option>
+                        </select>
+                    </div>
+                    
+                    <div id="place-bet-form" class="hidden">
+                        <div class="form-group">
+                            <label for="select-participant">Participant</label>
+                            <select id="select-participant"></select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="select-option">Option</label>
+                            <select id="select-option"></select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bet-amount">Amount</label>
+                            <input type="number" id="bet-amount" placeholder="How much to bet?">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="set-odds">Odds</label>
+                            <input type="text" id="set-odds" placeholder="Set odds (e.g., 2.5 or +150)">
+                            <div id="auto-odds-display" class="odds-display hidden">
+                                <em>Odds will be calculated automatically based on all bets</em>
+                            </div>
+                        </div>
+                        
+                        <button id="place-bet">Place Bet</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Active Bets</h2>
+                <table id="bets-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Participants</th>
+                            <th>Total Staked</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <div id="bet-details" class="card hidden">
+                <h2>Bet Details: <span id="detail-title"></span></h2>
+                
+                <table id="bet-details-table">
+                    <thead>
+                        <tr>
+                            <th>Participant</th>
+                            <th>Option</th>
+                            <th>Amount</th>
+                            <th>Odds</th>
+                            <th>Potential Win</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                
+                <div id="settle-bet-section" class="form-group">
+                    <h3>Settle Bet</h3>
+                    <div class="form-group">
+                        <label for="winning-option">Winning Option</label>
+                        <select id="winning-option"></select>
+                    </div>
+                    <button id="settle-bet">Settle Bet</button>
+                </div>
+                
+                <div id="payout-results" class="hidden">
+                    <h3>Payouts</h3>
+                    <div id="payout-details" class="payout-card"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="odds-calculator" class="tab-content">
+            <div class="card">
+                <h2>Calculate Odds from Bets</h2>
+                
+                <p>Enter participants and their bets to calculate fair odds automatically.</p>
+                
+                <div class="form-group">
+                    <label>Add Participant & Bet</label>
+                    <div class="form-group">
+                        <input type="text" id="calc-participant" placeholder="Participant name">
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="calc-amount" placeholder="Bet amount">
+                    </div>
+                    <div class="form-group">
+                        <select id="calc-side">
+                            <option value="for">For</option>
+                            <option value="against">Against</option>
+                        </select>
+                    </div>
+                    <button id="add-calc-bet">Add Bet</button>
+                </div>
+                
+                <table id="calc-bets-table">
+                    <thead>
+                        <tr>
+                            <th>Participant</th>
+                            <th>Amount</th>
+                            <th>Side</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                
+                <button id="calculate-odds">Calculate Odds</button>
+                
+                <div id="calculated-odds" class="results-card hidden">
+                    <h3>Calculated Odds</h3>
+                    <div class="odds-display">
+                        <div>
+                            <strong>For:</strong> <span id="for-odds"></span>
+                        </div>
+                        <div>
+                            <strong>Against:</strong> <span id="against-odds"></span>
+                        </div>
+                    </div>
+                    
+                    <h3>Betting Insights</h3>
+                    <div id="betting-insights"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="toast" class="toast"></div>
+    
+    <footer>
+        &copy; 2025 BetRunner - A simple bet tracking and settlement tool
+    </footer>
+
+    <script>
+        let participants = [];
+        let bets = [];
+        let activeBet = null;
+        let calculatorBets = [];
+        
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === tabId) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            if (isError) {
+                toast.classList.add('error');
+            } else {
+                toast.classList.remove('error');
+            }
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        function loadFromStorage() {
+            const storedParticipants = localStorage.getItem('betrunner_participants');
+            const storedBets = localStorage.getItem('betrunner_bets');
+            
+            if (storedParticipants) {
+                participants = JSON.parse(storedParticipants);
+                renderParticipantsList();
+            }
+            
+            if (storedBets) {
+                bets = JSON.parse(storedBets);
+                renderBetsTable();
+                updateBetSelect();
+            }
+        }
+        
+        function saveToStorage() {
+            localStorage.setItem('betrunner_participants', JSON.stringify(participants));
+            localStorage.setItem('betrunner_bets', JSON.stringify(bets));
+        }
+        
+        document.getElementById('add-participant').addEventListener('click', () => {
+            const nameInput = document.getElementById('participant-name');
+            const name = nameInput.value.trim();
+            
+            if (name) {
+                if (!participants.includes(name)) {
+                    participants.push(name);
+                    renderParticipantsList();
+                    nameInput.value = '';
+                    saveToStorage();
+                } else {
+                    showToast('Participant already exists', true);
+                }
+            } else {
+                showToast('Please enter a name', true);
+            }
+        });
+        
+        function renderParticipantsList() {
+            const list = document.getElementById('participants-list');
+            list.innerHTML = '';
+            
+            participants.forEach(name => {
+                const tag = document.createElement('div');
+                tag.className = 'participant-tag';
+                tag.innerHTML = `
+                    ${name}
+                    <button class="remove-participant" data-name="${name}">×</button>
+                `;
+                list.appendChild(tag);
+            });
+            
+            document.querySelectorAll('.remove-participant').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const name = e.target.getAttribute('data-name');
+                    const index = participants.indexOf(name);
+                    if (index > -1) {
+                        participants.splice(index, 1);
+                        renderParticipantsList();
+                        saveToStorage();
+                    }
+                });
+            });
+        }
+        
+        document.getElementById('bet-type').addEventListener('change', (e) => {
+            const betType = e.target.value;
+            
+            if (betType === 'binary') {
+                document.getElementById('binary-options').classList.remove('hidden');
+                document.getElementById('multi-options').classList.add('hidden');
+            } else {
+                document.getElementById('binary-options').classList.add('hidden');
+                document.getElementById('multi-options').classList.remove('hidden');
+            }
+        });
+        
+        document.getElementById('add-outcome').addEventListener('click', () => {
+            const container = document.getElementById('multi-outcomes');
+            const newOutcome = document.createElement('div');
+            newOutcome.className = 'form-group';
+            
+            const outcomeCount = container.querySelectorAll('.outcome-option').length + 1;
+            newOutcome.innerHTML = `
+                <input type="text" class="outcome-option" placeholder="Outcome ${outcomeCount}">
+            `;
+            
+            container.appendChild(newOutcome);
+        });
+        
+        document.getElementById('create-bet').addEventListener('click', () => {
+            const title = document.getElementById('bet-title').value.trim();
+            const betType = document.getElementById('bet-type').value;
+            const oddsType = document.getElementById('odds-type').value;
+            const useAutoOdds = document.getElementById('auto-odds-checkbox').checked;
+            
+            if (!title) {
+                showToast('Please enter a bet title', true);
+                return;
+            }
+            
+            if (participants.length < 2) {
+                showToast('Add at least 2 participants', true);
+                return;
+            }
+            
+            let options = [];
+            
+            if (betType === 'binary') {
+                const forOption = document.getElementById('option-for').value.trim();
+                const againstOption = document.getElementById('option-against').value.trim();
+                
+                if (!forOption || !againstOption) {
+                    showToast('Please set both options', true);
+                    return;
+                }
+                
+                options = [forOption, againstOption];
+            } else {
+                const outcomeInputs = document.querySelectorAll('.outcome-option');
+                outcomeInputs.forEach(input => {
+                    const value = input.value.trim();
+                    if (value) {
+                        options.push(value);
+                    }
+                });
+                
+                if (options.length < 2) {
+                    showToast('Add at least 2 outcomes', true);
+                    return;
+                }
+            }
+            
+            const bet = {
+                id: Date.now().toString(),
+                title,
+                type: betType,
+                oddsFormat: oddsType,
+                options,
+                wagers: [],
+                settled: false,
+                winner: null,
+                autoOdds: useAutoOdds,
+                createdAt: new Date().toISOString()
+            };
+            
+            bets.push(bet);
+            saveToStorage();
+            renderBetsTable();
+            updateBetSelect();
+            document.getElementById('bet-title').value = '';
+            
+            showToast(`Bet created successfully${useAutoOdds ? ' with auto-odds' : ''}`);
+        });
+        
+        function renderBetsTable() {
+            const table = document.getElementById('bets-table').querySelector('tbody');
+            table.innerHTML = '';
+            
+            if (bets.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" style="text-align: center;">No bets created yet</td>
+                `;
+                table.appendChild(row);
+                return;
+            }
+            
+            bets.sort((a, b) => {
+                if (a.settled && !b.settled) return 1;
+                if (!a.settled && b.settled) return -1;
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            }).forEach(bet => {
+                const row = document.createElement('tr');
+                
+                const betParticipants = [...new Set(bet.wagers.map(wager => wager.participant))];
+                
+                const totalStaked = bet.wagers.reduce((sum, wager) => sum + wager.amount, 0);
+                
+                row.innerHTML = `
+                    <td>${bet.title}</td>
+                    <td>${betParticipants.length > 0 ? betParticipants.join(', ') : 'No bets placed'}</td>
+                    <td>${totalStaked.toFixed(2)}</td>
+                    <td>${bet.settled ? `Settled: ${bet.winner}` : 'Active'}</td>
+                    <td>
+                        <button class="action-btn view-btn" data-id="${bet.id}">View</button>
+                        <button class="action-btn delete-btn" data-id="${bet.id}">Delete</button>
+                    </td>
+                `;
+                table.appendChild(row);
+            });
+            
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const betId = e.target.getAttribute('data-id');
+                    activeBet = bets.find(bet => bet.id === betId);
+                    showBetDetails(activeBet);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const betId = e.target.getAttribute('data-id');
+                    const index = bets.findIndex(bet => bet.id === betId);
+                    
+                    if (index > -1) {
+                        bets.splice(index, 1);
+                        saveToStorage();
+                        renderBetsTable();
+                        updateBetSelect();
+                        showToast('Bet deleted');
+                    }
+                });
+            });
+        }
+        
+        function updateBetSelect() {
+            const select = document.getElementById('select-bet');
+            select.innerHTML = '<option value="">Choose a bet...</option>';
+            
+            bets.filter(bet => !bet.settled).forEach(bet => {
+                const option = document.createElement('option');
+                option.value = bet.id;
+                option.textContent = bet.title;
+                select.appendChild(option);
+            });
+        }
+        
+        function showBetDetails(bet) {
+            document.getElementById('bet-details').classList.remove('hidden');
+            document.getElementById('detail-title').textContent = bet.title;
+            
+            const table = document.getElementById('bet-details-table').querySelector('tbody');
+            table.innerHTML = '';
+            
+            if (bet.wagers.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" style="text-align: center;">No bets placed yet</td>
+                `;
+                table.appendChild(row);
+            } else {
+                bet.wagers.forEach(wager => {
+                    const row = document.createElement('tr');
+                    
+                    const potentialWin = calculatePotentialWin(wager.amount, wager.odds, bet.oddsFormat);
+                    
+                    row.innerHTML = `
+                        <td>${wager.participant}</td>
+                        <td>${wager.option}</td>
+                        <td>$${wager.amount.toFixed(2)}</td>
+                        <td>${formatOdds(wager.odds, bet.oddsFormat)}</td>
+                        <td>$${potentialWin.toFixed(2)}</td>
+                    `;
+                    table.appendChild(row);
+                });
+            }
+            
+            const winningOption = document.getElementById('winning-option');
+            winningOption.innerHTML = '';
+            
+            bet.options.forEach(option => {
+                const optEl = document.createElement('option');
+                optEl.value = option;
+                optEl.textContent = option;
+                winningOption.appendChild(optEl);
+            });
+            
+            const settleSection = document.getElementById('settle-bet-section');
+            const payoutResults = document.getElementById('payout-results');
+            
+            if (bet.settled) {
+                settleSection.classList.add('hidden');
+                payoutResults.classList.remove('hidden');
+                renderPayouts(bet);
+            } else {
+                settleSection.classList.remove('hidden');
+                payoutResults.classList.add('hidden');
+            }
+        }
+        
+        function calculatePotentialWin(amount, odds, format) {
+            let potentialWin = 0;
+            
+            if (format === 'decimal') {
+                potentialWin = amount * odds - amount;
+            } else if (format === 'american') {
+                if (odds > 0) {
+                    potentialWin = amount * (odds / 100);
+                } else {
+                    potentialWin = amount * (100 / Math.abs(odds));
+                }
+            } else if (format === 'fractional') {
+                const [numerator, denominator] = odds.split('/').map(Number);
+                potentialWin = amount * (numerator / denominator);
+            }
+            
+            return potentialWin;
+        }
+        
+        function formatOdds(odds, format) {
+            if (format === 'decimal') {
+                return odds.toFixed(2);
+            } else if (format === 'american') {
+                return odds > 0 ? `+${odds}` : odds;
+            } else if (format === 'fractional') {
+                return odds;
+            }
+            return odds;
+        }
+        
+        function parseOdds(oddsStr, format) {
+            if (format === 'decimal') {
+                return parseFloat(oddsStr);
+            } else if (format === 'american') {
+                return parseInt(oddsStr);
+            } else if (format === 'fractional') {
+                const [numerator, denominator] = oddsStr.split('/').map(Number);
+                if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
+                    return `${numerator}/${denominator}`;
+                }
+                return null;
+            }
+            return null;
+        }
+        
+        document.getElementById('select-bet').addEventListener('change', (e) => {
+            const betId = e.target.value;
+            
+            if (betId) {
+                const bet = bets.find(b => b.id === betId);
+                
+                if (bet) {
+                    const participantSelect = document.getElementById('select-participant');
+                    const optionSelect = document.getElementById('select-option');
+                    const oddsInput = document.getElementById('set-odds');
+                    const oddsDisplay = document.getElementById('auto-odds-display');
+                    
+                    participantSelect.innerHTML = '';
+                    participants.forEach(name => {
+                        const option = document.createElement('option');
+                        option.value = name;
+                        option.textContent = name;
+                        participantSelect.appendChild(option);
+                    });
+                    
+                    optionSelect.innerHTML = '';
+                    bet.options.forEach(option => {
+                        const optEl = document.createElement('option');
+                        optEl.value = option;
+                        optEl.textContent = option;
+                        optionSelect.appendChild(optEl);
+                    });
+                    
+                    if (bet.autoOdds) {
+                        oddsInput.readOnly = true;
+                        oddsInput.placeholder = "Odds will be auto-calculated";
+                        oddsDisplay.classList.remove('hidden');
+                    } else {
+                        oddsInput.readOnly = false;
+                        oddsInput.placeholder = `Set odds (e.g., ${
+                            bet.oddsFormat === 'decimal' ? '2.5' : 
+                            bet.oddsFormat === 'american' ? '+150' : '3/2'
+                        })`;
+                        oddsDisplay.classList.add('hidden');
+                    }
+                    
+                    document.getElementById('place-bet-form').classList.remove('hidden');
+                }
+            } else {
+                document.getElementById('place-bet-form').classList.add('hidden');
+            }
+        });
+        
+        function calculateAutoOdds(bet, newWager = null) {
+            let wagers = [...bet.wagers];
+            if (newWager) {
+                wagers.push(newWager);
+            }
+            
+            if (bet.type === 'binary' && bet.options.length === 2) {
+                const sides = {
+                    [bet.options[0]]: {
+                        total: 0,
+                        wagers: []
+                    },
+                    [bet.options[1]]: {
+                        total: 0,
+                        wagers: []
+                    }
+                };
+                
+                wagers.forEach(wager => {
+                    sides[wager.option].total += wager.amount;
+                    sides[wager.option].wagers.push(wager);
+                });
+                
+                const forSide = bet.options[0];
+                const againstSide = bet.options[1];
+                
+                if (sides[forSide].total === 0 || sides[againstSide].total === 0) {
+                    const nonZeroSide = sides[forSide].total > 0 ? forSide : againstSide;
+                    const zeroSide = nonZeroSide === forSide ? againstSide : forSide;
+                    
+                    const result = {};
+                    result[nonZeroSide] = {
+                        decimal: 1.90,
+                        american: -110,
+                        fractional: "9/10",
+                        probability: 0.525
+                    };
+                    
+                    result[zeroSide] = {
+                        decimal: 1.90,
+                        american: -110,
+                        fractional: "9/10",
+                        probability: 0.525
+                    };
+                    
+                    return result;
+                }
+            }
+            
+            const optionWagers = {};
+            bet.options.forEach(option => {
+                optionWagers[option] = {
+                    total: 0,
+                    wagers: []
+                };
+            });
+            
+            wagers.forEach(wager => {
+                optionWagers[wager.option].total += wager.amount;
+                optionWagers[wager.option].wagers.push(wager);
+            });
+            
+            const totalPool = Object.values(optionWagers).reduce((sum, opt) => sum + opt.total, 0);
+            
+            if (totalPool === 0) {
+                return null;
+            }
+            
+            const result = {};
+            
+            bet.options.forEach(option => {
+                if (optionWagers[option].total === 0) {
+                    result[option] = null;
+                } else {
+                    const impliedProb = optionWagers[option].total / totalPool;
+                    const decimalOdds = 1 / impliedProb;
+                    
+                    let americanOdds;
+                    if (decimalOdds >= 2) {
+                        americanOdds = Math.round((decimalOdds - 1) * 100);
+                    } else {
+                        americanOdds = Math.round(-100 / (decimalOdds - 1));
+                    }
+                    
+                    let fractionalOdds = calculateFractionalOdds(decimalOdds);
+                    
+                    result[option] = {
+                        decimal: decimalOdds,
+                        american: americanOdds,
+                        fractional: fractionalOdds,
+                        probability: impliedProb
+                    };
+                }
+            });
+            
+            return result;
+        }
+        
+        function calculateFractionalOdds(decimalOdds) {
+            const profit = decimalOdds - 1;
+            
+            const denominators = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20];
+            let bestNumerator = 0;
+            let bestDenominator = 1;
+            let bestError = Infinity;
+            
+            denominators.forEach(den => {
+                const num = Math.round(profit * den);
+                const approx = num / den;
+                const error = Math.abs(profit - approx);
+                
+                if (error < bestError) {
+                    bestError = error;
+                    bestNumerator = num;
+                    bestDenominator = den;
+                }
+            });
+            
+            return `${bestNumerator}/${bestDenominator}`;
+        }
+        
+        document.getElementById('place-bet').addEventListener('click', () => {
+            const betId = document.getElementById('select-bet').value;
+            const participant = document.getElementById('select-participant').value;
+            const option = document.getElementById('select-option').value;
+            const amountStr = document.getElementById('bet-amount').value;
+            let oddsStr = document.getElementById('set-odds').value;
+            
+            if (!betId || !participant || !option || !amountStr) {
+                showToast('Please fill in all required fields', true);
+                return;
+            }
+            
+            const amount = parseFloat(amountStr);
+            
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Please enter a valid bet amount', true);
+                return;
+            }
+            
+            const betIndex = bets.findIndex(b => b.id === betId);
+            const bet = bets[betIndex];
+            
+            const useAutoOdds = bet.autoOdds === true;
+            
+            let odds;
+            if (useAutoOdds) {
+                const tempWager = {
+                    participant,
+                    option,
+                    amount
+                };
+                
+                const autoOdds = calculateAutoOdds(bet, tempWager);
+                
+                if (!autoOdds || !autoOdds[option]) {
+                    showToast('Unable to calculate odds. Please place bets on both sides.', true);
+                    return;
+                }
+                
+                if (bet.oddsFormat === 'decimal') {
+                    odds = autoOdds[option].decimal;
+                } else if (bet.oddsFormat === 'american') {
+                    odds = autoOdds[option].american;
+                } else {
+                    odds = autoOdds[option].fractional;
+                }
+                
+                const oddsDisplay = document.getElementById('auto-odds-display');
+                oddsDisplay.classList.remove('hidden');
+                oddsDisplay.innerHTML = `<strong>Auto odds:</strong> ${formatOdds(odds, bet.oddsFormat)} 
+                                        (${(autoOdds[option].probability * 100).toFixed(1)}%)`;
+                document.getElementById('set-odds').value = formatOdds(odds, bet.oddsFormat).toString();
+            } else {
+                if (!oddsStr) {
+                    showToast('Please enter odds', true);
+                    return;
+                }
+                
+                odds = parseOdds(oddsStr, bet.oddsFormat);
+                if (odds === null) {
+                    showToast(`Please enter valid ${bet.oddsFormat} odds`, true);
+                    return;
+                }
+            }
+            
+            bet.wagers.push({
+                participant,
+                option,
+                amount,
+                odds
+            });
+            
+            bets[betIndex] = bet;
+            saveToStorage();
+            renderBetsTable();
+            
+            document.getElementById('bet-amount').value = '';
+            if (!useAutoOdds) {
+                document.getElementById('set-odds').value = '';
+            }
+            
+            showToast('Bet placed successfully');
+        });
+        
+        document.getElementById('settle-bet').addEventListener('click', () => {
+            if (!activeBet) return;
+            
+            const winningOption = document.getElementById('winning-option').value;
+            const betIndex = bets.findIndex(b => b.id === activeBet.id);
+            
+            if (betIndex > -1) {
+                bets[betIndex].settled = true;
+                bets[betIndex].winner = winningOption;
+                saveToStorage();
+                renderBetsTable();
+                updateBetSelect();
+                
+                activeBet = bets[betIndex];
+                showBetDetails(activeBet);
+                
+                showToast('Bet settled successfully');
+            }
+        });
+        
+        function renderPayouts(bet) {
+            const payoutDetails = document.getElementById('payout-details');
+            payoutDetails.innerHTML = '';
+            
+            if (!bet.settled || bet.wagers.length === 0) return;
+            
+            const winners = bet.wagers.filter(wager => wager.option === bet.winner);
+            const losers = bet.wagers.filter(wager => wager.option !== bet.winner);
+            
+            const totalWinnersBet = winners.reduce((sum, w) => sum + w.amount, 0);
+            const totalLosersBet = losers.reduce((sum, w) => sum + w.amount, 0);
+            
+            if (winners.length === 0) {
+                payoutDetails.innerHTML = '<p>No winners for this bet</p>';
+                return;
+            }
+            
+            if (losers.length === 0) {
+                payoutDetails.innerHTML = '<p>Everyone won! No payouts necessary.</p>';
+                return;
+            }
+            
+            const payouts = [];
+            
+            winners.forEach(winner => {
+                const potentialWin = calculatePotentialWin(winner.amount, winner.odds, bet.oddsFormat);
+                
+                if (totalLosersBet > 0) {
+                    losers.forEach(loser => {
+                        const proportion = loser.amount / totalLosersBet;
+                        const amountToPay = potentialWin * proportion;
+                        
+                        if (amountToPay > 0) {
+                            payouts.push({
+                                from: loser.participant,
+                                to: winner.participant,
+                                amount: amountToPay
+                            });
+                        }
+                    });
+                }
+            });
+            
+            const consolidatedPayouts = {};
+            
+            payouts.forEach(payout => {
+                const key = `${payout.from}-${payout.to}`;
+                
+                if (consolidatedPayouts[key]) {
+                    consolidatedPayouts[key].amount += payout.amount;
+                } else {
+                    consolidatedPayouts[key] = { ...payout };
+                }
+            });
+            
+            const finalPayouts = Object.values(consolidatedPayouts).sort((a, b) => b.amount - a.amount);
+            
+            finalPayouts.forEach(payout => {
+                const item = document.createElement('div');
+                item.className = 'payout-item';
+                item.innerHTML = `
+                    <span class="loser">${payout.from}</span>
+                    <span>pays</span>
+                    <span class="winner">${payout.to}</span>
+                    <span>$${payout.amount.toFixed(2)}</span>
+                `;
+                payoutDetails.appendChild(item);
+            });
+            
+            const summary = document.createElement('div');
+            summary.className = 'payout-summary';
+            summary.innerHTML = `
+                <p>Winning option: <strong>${bet.winner}</strong></p>
+                <p>Total pot: $${(totalWinnersBet + totalLosersBet).toFixed(2)}</p>
+            `;
+            payoutDetails.appendChild(summary);
+        }
+        
+        document.getElementById('add-calc-bet').addEventListener('click', () => {
+            const participant = document.getElementById('calc-participant').value.trim();
+            const amountStr = document.getElementById('calc-amount').value;
+            const side = document.getElementById('calc-side').value;
+            
+            if (!participant || !amountStr) {
+                showToast('Please enter participant and amount', true);
+                return;
+            }
+            
+            const amount = parseFloat(amountStr);
+            
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Please enter a valid bet amount', true);
+                return;
+            }
+            
+            calculatorBets.push({ participant, amount, side });
+            renderCalculatorBets();
+            
+            document.getElementById('calc-participant').value = '';
+            document.getElementById('calc-amount').value = '';
+        });
+        
+        function renderCalculatorBets() {
+            const table = document.getElementById('calc-bets-table').querySelector('tbody');
+            table.innerHTML = '';
+            
+            if (calculatorBets.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="4" style="text-align: center;">No bets added yet</td>
+                `;
+                table.appendChild(row);
+                return;
+            }
+            
+            calculatorBets.forEach((bet, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${bet.participant}</td>
+                    <td>$${bet.amount.toFixed(2)}</td>
+                    <td>${bet.side === 'for' ? 'For' : 'Against'}</td>
+                    <td>
+                        <button class="action-btn delete-btn remove-calc-bet" data-index="${index}">Remove</button>
+                    </td>
+                `;
+                table.appendChild(row);
+            });
+            
+            document.querySelectorAll('.remove-calc-bet').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    calculatorBets.splice(index, 1);
+                    renderCalculatorBets();
+                });
+            });
+        }
+        
+        document.getElementById('calculate-odds').addEventListener('click', () => {
+            if (calculatorBets.length < 2) {
+                showToast('Add at least 2 bets to calculate odds', true);
+                return;
+            }
+            
+            const forAmount = calculatorBets
+                .filter(bet => bet.side === 'for')
+                .reduce((sum, bet) => sum + bet.amount, 0);
+                
+            const againstAmount = calculatorBets
+                .filter(bet => bet.side === 'against')
+                .reduce((sum, bet) => sum + bet.amount, 0);
+            
+            if (forAmount === 0 || againstAmount === 0) {
+                showToast('Need bets on both sides to calculate odds', true);
+                return;
+            }
+            
+            const totalPool = forAmount + againstAmount;
+            const forImpliedProb = forAmount / totalPool;
+            const againstImpliedProb = againstAmount / totalPool;
+            
+            const forDecimalOdds = 1 / forImpliedProb;
+            const againstDecimalOdds = 1 / againstImpliedProb;
+            
+            let forAmericanOdds, againstAmericanOdds;
+            
+            if (forDecimalOdds >= 2) {
+                forAmericanOdds = Math.round((forDecimalOdds - 1) * 100);
+            } else {
+                forAmericanOdds = Math.round(-100 / (forDecimalOdds - 1));
+            }
+            
+            if (againstDecimalOdds >= 2) {
+                againstAmericanOdds = Math.round((againstDecimalOdds - 1) * 100);
+            } else {
+                againstAmericanOdds = Math.round(-100 / (againstDecimalOdds - 1));
+            }
+            
+            document.getElementById('for-odds').innerHTML = `
+                ${forDecimalOdds.toFixed(2)} (${forAmericanOdds > 0 ? '+' : ''}${forAmericanOdds}) 
+                <small>${(forImpliedProb * 100).toFixed(1)}%</small>
+            `;
+            
+            document.getElementById('against-odds').innerHTML = `
+                ${againstDecimalOdds.toFixed(2)} (${againstAmericanOdds > 0 ? '+' : ''}${againstAmericanOdds})
+                <small>${(againstImpliedProb * 100).toFixed(1)}%</small>
+            `;
+            
+            const insightsDiv = document.getElementById('betting-insights');
+            insightsDiv.innerHTML = `
+                <p>Total pool: $${totalPool.toFixed(2)}</p>
+                <p>For side total: $${forAmount.toFixed(2)}</p>
+                <p>Against side total: $${againstAmount.toFixed(2)}</p>
+                <p>These odds represent a fair market with no vig/juice.</p>
+            `;
+            
+            document.getElementById('calculated-odds').classList.remove('hidden');
+        });
+        
+        loadFromStorage();
+        renderCalculatorBets();
+    </script>
+</body>
+</html>
